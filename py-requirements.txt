@@ -1,0 +1,10 @@
+pandas
+matplotlib
+numpy
+scikit-learn
+pycountry
+scipy
+statsmodels
+adjustText
+seaborn
+tqdm
