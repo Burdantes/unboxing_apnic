@@ -13,8 +13,8 @@ import numpy as np
 
 # Global constants
 DIRECTORY = '../data/PeeringDB/'
-PDB_YEAR = '2024'
-PDB_MONTH = '04'
+YEAR = '2024'
+MONTH = '04'
 
 country_dict = {'Mexico': 'MX', 'Brazil': 'BR', 'India': 'IN', 'Russia': 'RU', 'Japan': 'JP', 'South Korea': 'KR', }
 
@@ -62,47 +62,6 @@ def load_sibling_data(file_path):
 
 
 # Function to get ASN from PeeringDB
-def get_asn_from_peeringdb(isp_name, data_asn, data_org, data_sibling):
-    if 'Other' == isp_name:
-        return []
-
-    list_of_asn = []
-
-    # ISP-specific ASN mapping
-    isp_mapping = {
-        'Telmex': ['AS8151'], 'Vivo': ['AS26599'], 'Totalplay': [], 'Telcel': ['AS28403'],
-        'Spectrum': ['AS21989', 'AS7843'], 'Tim': ['AS26615'], 'Jio Fiber': ['AS55836', 'AS64049'],
-        'Megacable': ['AS13999', 'AS28541'], 'Excitel': ['AS133982'], 'BSNL - Bharat Sanchar Nigam': ['AS9829'],
-        'ACT - Atria Convergence Technologies': ['AS24309'], 'Asianet Broadband': ['AS45415'],
-        'Hathway Cable & Datacom': ['AS17488'], 'Beeline Internet': ['AS3216'], 'MTS Internet': ['AS8359'],
-        'Domru': ['AS60043'], 'Drei / 3': ['AS25255'], 'J:COM': ['AS9824', 'AS9617', 'AS4721'],
-        'Eo Hikari': ['AS23629']
-    }
-
-    list_of_asn.extend(isp_mapping.get(isp_name, []))
-
-    for item in data_asn:
-        if isp_name.lower() in item['name'].lower():
-            list_of_asn.append(f"AS{item['asn']}")
-
-    for item in data_org:
-        if isp_name.lower() in item['name'].lower():
-            org_id = item['id']
-            for item in data_asn:
-                if item['org_id'] == org_id:
-                    list_of_asn.append(f"AS{item['asn']}")
-
-    # Check for sibling ASNs
-    list_of_asn_with_sibling = deepcopy(list_of_asn)
-    for asn in list_of_asn:
-        asn_number = asn[2:]
-        if asn_number in data_sibling:
-            sibling_asns = data_sibling[asn_number].get('Sibling ASNs', [])
-            list_of_asn_with_sibling.extend([f"AS{item}" for item in sibling_asns])
-
-    return list(set(list_of_asn_with_sibling))
-
-
 
 # Function to prepare and save ISP data for a country
 def prepare_country_data(file_path, country_name, dg, data_asn, data_org, data_sibling, output_directory):
@@ -215,14 +174,13 @@ def prepare_country_data(file_path, country_name, dg, data_asn, data_org, data_s
     df['Fraction of Users'] = df['ASN'].apply(lambda x: sum(dg_country[dg_country['AS'].isin(x)]['% of Country']))
     ### remove all the rows where ['ASN'] is empty
     df = df[df['ASN'].apply(lambda x: len(x) > 0)]
-    ### find points where APNIC is lower than 0.5
-    dg = df[df['Fraction of Users'] < 0.5]
+    # ### find points where APNIC is lower than 0.5
+    # dg = df[df['Fraction of Users'] < 0.5]
 
     percentage_per_country_covered[country_name] = df['Fraction of Users'].sum()
     print(df['Fraction of Users'].sum())
     df['Fraction of Users'] = df['Fraction of Users'] / (df['Fraction of Users'].sum() / 100)
     df['Country'] = country_name
-    df['Fraction of Users'] = df['ASN'].apply(lambda x: sum(dg_country[dg_country['AS'].isin(x)]['% of Country']))
     return df
 
 
@@ -230,7 +188,7 @@ def prepare_country_data(file_path, country_name, dg, data_asn, data_org, data_s
 def read_apnic_file(path_to_file):
     datadb = []
     for file in os.listdir(path_to_file):
-        if file.endswith('.csv') and '2024' in file and '04' in file:
+        if file.endswith('.csv') and YEAR in file:
             df = pd.read_csv(os.path.join(path_to_file, file), skiprows=1)
             df['ASN'] = df['AS'].apply(lambda x: int(x.split('AS')[1]))
             df['Date'] = pd.to_datetime(file.split('.')[1])
@@ -335,7 +293,20 @@ def plot_comparison(parsed_dfs, percentage_per_country_covered):
 
     # Draw a line that goes through the middle
     plt.plot([0, 65], [0, 65], color='black', linestyle='--', linewidth=1.5)
-    # Add bbox_inches='tight' to savefig to prevent cutoff
+    # Convert to numpy arrays
+    all_percentages = np.array(all_percentages)
+    all_fractions = np.array(all_fractions)
+
+    # The predicted values for a 1:1 line are just the x-values (percentages)
+    predicted_fractions = all_percentages  # 1:1 line
+
+    # Calculate R^2 score using sklearn's r2_score
+    r_squared = r2_score(all_fractions, predicted_fractions)
+
+    # Add the R^2 value as text at the end of the line
+    plt.text(50, 62, f'$R^2$ = {r_squared:.2f}',
+             bbox=dict(facecolor='white', edgecolor='black', boxstyle='round,pad=0.5'), fontsize=14)
+
     plt.savefig('../plot/broadband_comparison.pdf', bbox_inches='tight')
 
 
@@ -354,7 +325,7 @@ def plot_us_histogram(dg_us):
 # Main function
 def main():
     # Load PeeringDB data
-    data = load_peeringdb_data(PDB_YEAR, PDB_MONTH, DIRECTORY)
+    data = load_peeringdb_data(YEAR, MONTH, DIRECTORY)
     data_asn = data['net']['data']
     data_org = data['org']['data']
 

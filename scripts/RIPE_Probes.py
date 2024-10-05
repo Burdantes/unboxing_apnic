@@ -20,5 +20,4 @@ def adding_ripe_atlas_probes(YEAR,MONTH,DAY):
 if __name__ == "__main__":
     TODAY = time.strftime("%Y-%m-%d")
     YEAR, MONTH, DAY = TODAY.split('-')
-    DAY = '01'
     adding_ripe_atlas_probes(YEAR,MONTH, DAY)
