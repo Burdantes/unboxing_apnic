@@ -67,8 +67,20 @@ python src/broadband_comparison.py
 ### Step 5: Comparing AnonCDN with APNIC
 
 Sadly, we cannot share the AnonCDN dataset. However, we can share our correlations score in a txt file for traffic ([cdn_correlations_score_traffic_volume.txt](results%2Fcdn_correlations_score_traffic_volume.txt)) and for User-Agent ([cdn_correlations_score_user_agents.txt](results%2Fcdn_correlations_score_user_agents.txt)).
+#### File Format
 
+Each line in the file is formatted as follows:
+   
+ ```
+<CC_ISO2>: Kendall Tau: <Kendall Tau value>, Pearson: <Pearson correlation coefficient>, Linear Coefficient: <Linear regression coefficient>
+```
+a. *CC_ISO2*: The two-letter country code of the country.
 
+b. *Kendall Tau*: The Kendall Tau rank correlation coefficient between two variables. It measures the ordinal association, assessing how well the relationship between two variables can be described using a monotonic function. Values range from -1 (perfect negative association) to +1 (perfect positive association), with 0 indicating no association.
+
+c. *Pearson*: The Pearson correlation coefficient between two variables. It measures the linear correlation, quantifying the strength and direction of the linear relationship. Values range from -1 to +1, where: +1: Perfect positive linear relationship.  0: No linear relationship. -1: Perfect negative linear relationship.
+
+d. *Linear Coefficient*: The slope from a linear regression analysis. It represents the expected change in the dependent variable for a one-unit change in the independent variable.
 
 # TO-DO List
 
