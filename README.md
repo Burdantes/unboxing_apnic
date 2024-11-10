@@ -64,6 +64,11 @@ python src/broadband_comparison.py
     python src/visualization.py
    ```
 
+### Step 5: Comparing AnonCDN with APNIC
+
+Sadly, we cannot share the AnonCDN dataset. However, we can share our correlations score in a txt file for traffic ([cdn_correlations_score_traffic_volume.txt](results%2Fcdn_correlations_score_traffic_volume.txt)) and for User-Agent ([cdn_correlations_score_user_agents.txt](results%2Fcdn_correlations_score_user_agents.txt)).
+
+
 
 # TO-DO List
 
@@ -72,7 +77,10 @@ This file contains a list of tasks and features that are pending or planned for 
 ## Pending Tasks
 
 1. 
-   - [ ] Finalize the export of the code by the ACM IMC 2024 conference.
+   - [ ] Finalize the export of the temporal study by the ACM IMC 2024 conference.
+   - [ ] Automate aggregation mechanism to improve stability for sharing before the first week of November. 
+   - [ ] Share list of trustworthy countries in a txt file according to AnonCDN comparison.
+
 
 ## License
 This project is licensed under the MIT License - see the `LICENSE` file for details.

@@ -134,6 +134,8 @@ def prepare_country_data(file_path, country_name, dg, data_asn, data_org, data_s
                            'AS23790', 'AS24276', 'AS45675']  # J:COM ASNs
         elif isp_name == 'Eo Hikari':
             list_of_asn = ['AS23629']
+        elif isp_name == 'LG Uplus':
+            list_of_asn = ['AS3786', 'AS17858', 'AS17853', 'AS9316', 'AS9950']
         # isp_name = isp_name.splt(' ')[0]
         for item in data_asn:
             if isp_name.lower() in item['name'].lower():
@@ -342,6 +344,9 @@ def main():
     for filename in os.listdir(directory):
         if filename.endswith(".xlsx") and filename.startswith('statistic_id'):
             country_name = extract_country_name(filename)
+            ## only consider a few country for plot in the talk
+            if country_name not in ['The Us', 'Brazil', 'India', 'Russia', 'Japan', 'South Korea']:
+                continue
             file_path = os.path.join(directory, filename)
             parsed_df = prepare_country_data(file_path, country_name, dg, data_asn, data_org, data_sibling, directory)
             parsed_dfs.append(parsed_df)
