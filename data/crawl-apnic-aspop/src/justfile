@@ -1,0 +1,35 @@
+default:
+	@just --list --justfile {{justfile()}}
+
+# generate a list of all days between 2013-11-01 and (today - 2 days) and save to dates.txt
+generate-dates:
+	python3 generate-dates.py > dates.txt
+
+# crawl all days contained in dates.txt
+[confirm("Are you sure you want to crawl 11+ years (5GB) worth of data?")]
+[private]
+crawl-all:
+	cat dates.txt \
+		| parallel -j1 --delay 5s "bash get-date.sh {} | tee -a ../data/aspop.{}.txt"
+
+# crawl only missing days
+crawl-update: generate-dates
+	# get all the existing dates
+	ls -1 ../data/aspop.*.csv \
+		| parallel "echo {/.} | cut -d'.' -f 2" \
+		| sort -r \
+		> dates-existing.txt
+
+	# calculate missing days
+	comm -13 <(sort dates-existing.txt) <(sort dates.txt) \
+		> dates-to-update.txt
+
+	# crawl missing days
+	cat dates-to-update.txt \
+		| parallel -j1 --delay 5s "bash get-date.sh {} | tee -a ../data/aspop.{}.txt"
+
+# clean up any meta-files (but not the data)
+clean:
+	rm -f dates.txt dates-existing.txt dates-to-update.txt
+
+# vim: set ft=make noexpandtab :
